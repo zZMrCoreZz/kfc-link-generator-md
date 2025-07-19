@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <title>KFC QR Link Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: sans-serif; background: #f4f4f4; margin: 20px; }
+    h2 { text-align: center; }
+    input, select, button { width: 100%; padding: 10px; margin-bottom: 15px; font-size: 16px; }
+    #qr-scanner { width: 100%; margin-bottom: 15px; display: none; }
+    #links div { background: #fff; padding: 10px; margin-bottom: 5px; border: 1px solid #ccc; border-radius: 5px; }
+    .copy-btn, .open-btn, .proxy-btn {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 8px;
+      margin-top: 5px;
+      cursor: pointer;
+      width: 48%;
+      display: inline-block;
+    }
+    .proxy-container {
+      text-align: center;
+      margin-top: 20px;
+    }
+    .proxy-container button {
+      width: 48%;
+      margin: 5px 1%;
+    }
+  </style>
+</head>
+<body>
+
+<h2>📲 KFC QR Link Generator</h2>
+
+<label>1. Сканируй QR или загрузи изображение:</label>
+<button onclick="startQRScanner()">📷 Камера</button>
+<input type="file" id="imageInput" accept="image/*">
+<div id="qr-scanner"></div>
+
+<label>2. Ссылка из QR:</label>
+<input type="text" id="scannedResult" placeholder="Сканированная ссылка появится здесь">
+
+<label>3. Дата (по умолчанию сегодня):</label>
+<input type="date" id="selectedDate">
+
+<label>4. Время начала (по умолчанию 10:00):</label>
+<input type="time" id="startTime">
+
+<label>5. Время окончания (по умолчанию сейчас):</label>
+<input type="time" id="endTime">
+
+<label>6. Количество ссылок для генерации:</label>
+<input type="number" id="linkCount" value="10">
+
+<button onclick="generateLinks()">🔗 Сгенерировать ссылки</button>
+
+<h3>Ссылки:</h3>
+<div id="links"></div>
+
+<div class="proxy-container">
+  <button class="proxy-btn" onclick="window.open('https://proxyium.com', '_blank')">🔓 Proxyium</button>
+  <button class="proxy-btn" onclick="window.open('https://www.croxyproxy.com', '_blank')">🔓 CroxyProxy</button>
+</div>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script>
+  let html5QrCode;
+
+  function setDefaultDateTime() {
+    const now = new Date();
+    document.getElementById("selectedDate").valueAsDate = now;
+    document.getElementById("startTime").value = "10:00";
+    document.getElementById("endTime").value = now.toTimeString().slice(0, 5);
+  }
+
+  function startQRScanner() {
+    const scannerDiv = document.getElementById("qr-scanner");
+    scannerDiv.style.display = "block";
+    html5QrCode = new Html5Qrcode("qr-scanner");
+    html5QrCode.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: 250 },
+      qrCodeSuccess
+    ).catch(err => alert("Ошибка камеры: " + err));
+  }
+
+  function qrCodeSuccess(decodedText) {
+    document.getElementById("scannedResult").value = decodedText;
+    html5QrCode.stop().then(() => {
+      document.getElementById("qr-scanner").style.display = "none";
+    });
+  }
+
+  document.getElementById("imageInput").addEventListener("change", function () {
+    const file = this.files[0];
+    if (!file) return;
+    const qr = new Html5Qrcode("qr-scanner");
+    qr.scanFile(file, true).then(decodedText => {
+      document.getElementById("scannedResult").value = decodedText;
+    }).catch(() => alert("QR не найден в изображении"));
+  });
+
+  function parseLinkData(link) {
+    const url = new URL(link);
+    const params = new URLSearchParams(url.search);
+    return {
+      S: params.get("S"),
+      dateTime: decodeURIComponent(params.get("D")),
+      TI: parseInt(params.get("TI")),
+      lang: params.get("Q_Language") || "RO"
+    };
+  }
+
+  function generateLinks() {
+    const link = document.getElementById("scannedResult").value.trim();
+    const date = document.getElementById("selectedDate").value;
+    const startTime = document.getElementById("startTime").value;
+    const endTime = document.getElementById("endTime").value;
+    const count = parseInt(document.getElementById("linkCount").value);
+
+    if (!link || !date || !startTime || !endTime || !count) {
+      alert("Заполни все поля!");
+      return;
+    }
+
+    const data = parseLinkData(link);
+    const base = "https://customer.kfc-listens.com/jfe/form/SV_7WmLtfIDJuM3Vn8";
+    const start = new Date(`${date}T${startTime}`);
+    const end = new Date(`${date}T${endTime}`);
+    const now = new Date();
+
+    if (end < start) {
+      alert("Время окончания не может быть раньше начала!");
+      return;
+    }
+    if (end > now) {
+      alert("Время не может быть из будущего!");
+      return;
+    }
+
+    const diff = (end - start) / count;
+    let linksHTML = "";
+
+    for (let i = 0; i < count; i++) {
+      const ti = data.TI - (count - i - 1);
+      const time = new Date(start.getTime() + diff * i);
+      const dd = String(time.getDate()).padStart(2, "0");
+      const mm = String(time.getMonth() + 1).padStart(2, "0");
+      const yyyy = time.getFullYear();
+      const hh = String(time.getHours()).padStart(2, "0");
+      const mi = String(time.getMinutes()).padStart(2, "0");
+
+      const encodedDateTime = encodeURIComponent(`${dd}/${mm}/${yyyy}%20${hh}:${mi}`);
+      const fullLink = `${base}?S=${data.S}&D=${encodedDateTime}&TI=${ti}&Q_Language=${data.lang}`;
+
+      linksHTML += `<div>
+        <a href="${fullLink}" target="_blank">${fullLink}</a><br>
+        <button class="copy-btn" onclick="copyLink('${fullLink}')">📋 Копировать</button>
+        <button class="open-btn" onclick="window.open('${fullLink}', '_blank')">🔓 Открыть</button>
+      </div>`;
+    }
+
+    document.getElementById("links").innerHTML = linksHTML;
+  }
+
+  function copyLink(text) {
+    navigator.clipboard.writeText(decodeURIComponent(text))
+      .then(() => alert("Скопировано!"))
+      .catch(() => alert("Не удалось скопировать"));
+  }
+
+  setDefaultDateTime();
+</script>
+
+</body>
+</html>
