@@ -262,12 +262,17 @@
 
       linksHTML += `<div class="link-box">
         <a href="${fullLink}" target="_blank">${fullLink}</a>
-        <button onclick="navigator.clipboard.writeText('${fullLink}'); alert('Copiat!')">📋 Copiază</button>
+        <button onclick="copyLink('${fullLink}')">📋 Copiază</button>
         <button onclick="window.open('${fullLink}', '_blank')">🔓 Deschide</button>
       </div>`;
     }
 
     document.getElementById("links").innerHTML = linksHTML;
+  }
+  function copyLink(text) {
+    navigator.clipboard.writeText(decodeURIComponent(text))
+      .then(() => alert("Copiat!"))
+      .catch(() => alert("Copierea nu a reușit"));
   }
 
   setDefaultDateTime();
