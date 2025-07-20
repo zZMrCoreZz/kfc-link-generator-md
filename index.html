@@ -127,6 +127,19 @@
       width: 100%;
       margin-top: 10px;
     }
+	
+	.button-row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-top: 8px;
+	}
+
+	.button-row button {
+	flex: 1;
+	min-width: 120px;
+	}
+
   </style>
 </head>
 <body>
@@ -168,6 +181,29 @@
     <button onclick="window.open('https://www.croxyproxy.com', '_blank')">🌐 Deschide CroxyProxy</button>
   </div>
 </main>
+
+<script>
+  function copyLink(link) {
+    navigator.clipboard.writeText(link).then(() => {
+      alert("Link copiat!");
+    });
+  }
+
+  function openProxyium(link) {
+    // Просто копируем уже готовую ссылку, без encodeURIComponent!
+    navigator.clipboard.writeText(link).then(() => {
+      window.open("https://www.proxyium.com", "_blank");
+    });
+  }
+
+  function openCroxy(link) {
+    navigator.clipboard.writeText(link).then(() => {
+      window.open("https://www.croxyproxy.com", "_blank");
+    });
+  }
+</script>
+
+
 
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script>
@@ -261,10 +297,15 @@
       const fullLink = `${base}?S=${data.S}&D=${encodedDateTime}&TI=${ti}&Q_Language=${data.lang}`;
 
       linksHTML += `<div class="link-box">
-        <a href="${fullLink}" target="_blank">${fullLink}</a>
-        <button onclick="copyLink('${fullLink}')">📋 Copiază</button>
-        <button onclick="window.open('${fullLink}', '_blank')">🔓 Deschide</button>
-      </div>`;
+		<a href="${fullLink}" target="_blank">${decodeURIComponent(fullLink)}</a>
+		<div class="button-row">
+			<button onclick="copyLink('${fullLink}')">📋 Copiază</button>
+			<button onclick="window.open(decodeURIComponent('${fullLink}'), '_blank')">🔓 Deschide</button>
+			<button onclick="openProxyium('${fullLink}')">🌐VPNProxyium</button>
+			<button onclick="openCroxy('${fullLink}')">🛡️VPNCroxyProxy</button>
+		</div>
+	</div>`;
+
     }
 
     document.getElementById("links").innerHTML = linksHTML;
@@ -275,7 +316,27 @@
       .catch(() => alert("Copierea nu a reușit"));
   }
 
+function openProxyium(link) {
+    // Decodăm corect link-ul
+    const decodedLink = decodeURIComponent(link);
+
+    // Copiem în clipboard pentru a-l lipi în proxyium manual
+    navigator.clipboard.writeText(decodedLink).then(() => {
+      window.open("https://www.proxyium.com", "_blank");
+    });
+  }
+
+  function openCroxy(link) {
+    const decodedLink = decodeURIComponent(link);
+
+    // Copiem în clipboard
+    navigator.clipboard.writeText(decodedLink).then(() => {
+      window.open("https://www.croxyproxy.com", "_blank");
+    });
+  }
+
   setDefaultDateTime();
+
 </script>
 </body>
 </html>
