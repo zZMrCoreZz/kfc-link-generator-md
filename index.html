@@ -180,6 +180,8 @@
     <button onclick="window.open('https://proxyium.com', '_blank')">🌐 Deschide Proxyium</button>
     <button onclick="window.open('https://www.croxyproxy.com', '_blank')">🌐 Deschide CroxyProxy</button>
   </div>
+  <button onclick="clearUsedLinks()" style="background:#555;color:#fff;width:100%;margin-top:20px;">🧹 Curăță linkuri folosite</button>
+
 </main>
 
 <script>
@@ -201,6 +203,28 @@
       window.open("https://www.croxyproxy.com", "_blank");
     });
   }
+  // Salvăm linkurile folosite
+function markLinkAsUsed(link) {
+  let used = JSON.parse(localStorage.getItem("usedLinks") || "[]");
+  if (!used.includes(link)) {
+    used.push(link);
+    localStorage.setItem("usedLinks", JSON.stringify(used));
+  }
+}
+
+// Verificăm dacă linkul a fost folosit deja
+function isLinkUsed(link) {
+  let used = JSON.parse(localStorage.getItem("usedLinks") || "[]");
+  return used.includes(link);
+}
+
+// Șterge toate linkurile folosite
+function clearUsedLinks() {
+  localStorage.removeItem("usedLinks");
+  alert("Linkurile folosite au fost șterse!");
+  location.reload();
+}
+
 </script>
 
 
@@ -296,15 +320,18 @@
       const encodedDateTime = encodeURIComponent(`${dd}/${mm}/${yyyy}%20${hh}:${mi}`);
       const fullLink = `${base}?S=${data.S}&D=${encodedDateTime}&TI=${ti}&Q_Language=${data.lang}`;
 
-      linksHTML += `<div class="link-box">
-		<a href="${fullLink}" target="_blank">${decodeURIComponent(fullLink)}</a>
-		<div class="button-row">
-			<button onclick="copyLink('${fullLink}')">📋 Copiază</button>
-			<button onclick="window.open(decodeURIComponent('${fullLink}'), '_blank')">🔓 Deschide</button>
-			<button onclick="openProxyium('${fullLink}')">🌐VPNProxyium</button>
-			<button onclick="openCroxy('${fullLink}')">🛡️VPNCroxyProxy</button>
-		</div>
-	</div>`;
+     if (isLinkUsed(fullLink)) continue;
+
+linksHTML += `<div class="link-box">
+  <a href="${fullLink}" target="_blank">${decodeURIComponent(fullLink)}</a>
+  <div class="button-row">
+    <button onclick="copyAndMark('${fullLink}')">📋 Copiază</button>
+    <button onclick="openAndMark('${fullLink}')">🔓 Deschide</button>
+    <button onclick="openProxyium('${fullLink}', event)">🌐VPNProxyium</button>
+	<button onclick="openCroxy('${fullLink}', event)">🛡️VPNCroxyProxy</button>
+  </div>
+</div>`;
+
 
     }
 
@@ -316,24 +343,37 @@
       .catch(() => alert("Copierea nu a reușit"));
   }
 
-function openProxyium(link) {
-    // Decodăm corect link-ul
-    const decodedLink = decodeURIComponent(link);
+function copyAndMark(link) {
+  copyLink(link);
+  markLinkAsUsed(link);
+  event.target.closest('.link-box').style.opacity = 0.4;
+}
 
-    // Copiem în clipboard pentru a-l lipi în proxyium manual
-    navigator.clipboard.writeText(decodedLink).then(() => {
-      window.open("https://www.proxyium.com", "_blank");
-    });
-  }
+function openAndMark(link) {
+  window.open(decodeURIComponent(link), '_blank');
+  markLinkAsUsed(link);
+  event.target.closest('.link-box').style.opacity = 0.4;
+}
 
-  function openCroxy(link) {
-    const decodedLink = decodeURIComponent(link);
 
-    // Copiem în clipboard
-    navigator.clipboard.writeText(decodedLink).then(() => {
-      window.open("https://www.croxyproxy.com", "_blank");
-    });
-  }
+function openProxyium(link, event) {
+  const decodedLink = decodeURIComponent(link);
+  navigator.clipboard.writeText(decodedLink).then(() => {
+    markLinkAsUsed(link);
+    event.target.closest('.link-box').style.opacity = 0.4;
+    window.open("https://www.proxyium.com", "_blank");
+  });
+}
+
+function openCroxy(link, event) {
+  const decodedLink = decodeURIComponent(link);
+  navigator.clipboard.writeText(decodedLink).then(() => {
+    markLinkAsUsed(link);
+    event.target.closest('.link-box').style.opacity = 0.4;
+    window.open("https://www.croxyproxy.com", "_blank");
+  });
+}
+
 
   setDefaultDateTime();
 
