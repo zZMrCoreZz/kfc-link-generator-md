@@ -2,67 +2,172 @@
 <html lang="ro">
 <head>
   <meta charset="UTF-8">
-  <title>KFC QR Link Generator</title>
+  <title>Generator link feedback KFC</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="https://kfclistenscx.qualtrics.com/CP/Graphic.php?IM=IM_dbC1Qsmkf9X2Bmu">
   <style>
-    body { font-family: sans-serif; background: #f4f4f4; margin: 20px; }
-    h2 { text-align: center; }
-    input, select, button { width: 100%; padding: 10px; margin-bottom: 15px; font-size: 16px; }
-    #qr-scanner { width: 100%; margin-bottom: 15px; display: none; }
-    #links div { background: #fff; padding: 10px; margin-bottom: 5px; border: 1px solid #ccc; border-radius: 5px; }
-    .copy-btn, .open-btn, .proxy-btn {
-      background-color: #007bff;
+    :root {
+      --kfc-red: #e4002b;
+      --kfc-dark: #1d1d1d;
+      --kfc-light: #fefefe;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: var(--kfc-light);
+      color: var(--kfc-dark);
+    }
+
+    header {
+      background-color: var(--kfc-light);
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      border-bottom: 4px solid var(--kfc-red);
+    }
+
+    header img {
+      height: 50px;
+      margin-right: 15px;
+    }
+
+    header h1 {
+      font-size: 20px;
+      margin: 0;
+      color: var(--kfc-red);
+    }
+
+    main {
+      max-width: 650px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      color: var(--kfc-dark);
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="time"],
+    input[type="number"],
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: var(--kfc-red);
       color: white;
       border: none;
-      padding: 8px;
-      margin-top: 5px;
       cursor: pointer;
-      width: 48%;
-      display: inline-block;
+      margin-top: 15px;
     }
-    .proxy-container {
-      text-align: center;
+
+    button:hover {
+      background-color: #c30024;
+    }
+
+    .link-container {
       margin-top: 20px;
     }
+
+    .link-box {
+      background: #fafafa;
+      padding: 10px;
+      border: 1px solid #ddd;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+
+    .link-box a {
+      display: block;
+      color: var(--kfc-red);
+      font-weight: bold;
+      margin-bottom: 5px;
+      word-break: break-word;
+    }
+
+    .link-box button {
+      width: 48%;
+      display: inline-block;
+      margin-right: 2%;
+      background-color: var(--kfc-dark);
+    }
+
+    .proxy-container {
+      margin-top: 30px;
+      text-align: center;
+    }
+
     .proxy-container button {
       width: 48%;
       margin: 5px 1%;
+      background-color: #555;
+    }
+
+    #qr-scanner {
+      display: none;
+      width: 100%;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
 
-<h2>📲 KFC QR Link Generator</h2>
+<header>
+  <img src="https://kfclistenscx.qualtrics.com/CP/Graphic.php?IM=IM_dbC1Qsmkf9X2Bmu" alt="KFC Logo">
+  <h1>Generator link feedback KFC</h1>
+</header>
 
-<label>1. Сканируй QR или загрузи изображение:</label>
-<button onclick="startQRScanner()">📷 Камера</button>
-<input type="file" id="imageInput" accept="image/*">
-<div id="qr-scanner"></div>
+<main>
+  <h2>Generează linkuri pentru feedback</h2>
 
-<label>2. Ссылка из QR:</label>
-<input type="text" id="scannedResult" placeholder="Сканированная ссылка появится здесь">
+  <label>1. Scanează QR sau încarcă o imagine:</label>
+  <button onclick="startQRScanner()">📷 Cameră</button>
+  <input type="file" id="imageInput" accept="image/*">
+  <div id="qr-scanner"></div>
 
-<label>3. Дата (по умолчанию сегодня):</label>
-<input type="date" id="selectedDate">
+  <label>2. Link din QR:</label>
+  <input type="text" id="scannedResult" placeholder="Aici apare linkul scanat">
 
-<label>4. Время начала (по умолчанию 10:00):</label>
-<input type="time" id="startTime">
+  <label>3. Dată (implicit astăzi):</label>
+  <input type="date" id="selectedDate">
 
-<label>5. Время окончания (по умолчанию сейчас):</label>
-<input type="time" id="endTime">
+  <label>4. Ora de început:</label>
+  <input type="time" id="startTime">
 
-<label>6. Количество ссылок для генерации:</label>
-<input type="number" id="linkCount" value="10">
+  <label>5. Ora de sfârșit:</label>
+  <input type="time" id="endTime">
 
-<button onclick="generateLinks()">🔗 Сгенерировать ссылки</button>
+  <label>6. Câte linkuri să se genereze:</label>
+  <input type="number" id="linkCount" value="10">
 
-<h3>Ссылки:</h3>
-<div id="links"></div>
+  <button onclick="generateLinks()">🔗 Generează linkuri</button>
 
-<div class="proxy-container">
-  <button class="proxy-btn" onclick="window.open('https://proxyium.com', '_blank')">🔓 Proxyium</button>
-  <button class="proxy-btn" onclick="window.open('https://www.croxyproxy.com', '_blank')">🔓 CroxyProxy</button>
-</div>
+  <div id="links" class="link-container"></div>
+
+  <div class="proxy-container">
+    <button onclick="window.open('https://proxyium.com', '_blank')">🌐 Deschide Proxyium</button>
+    <button onclick="window.open('https://www.croxyproxy.com', '_blank')">🌐 Deschide CroxyProxy</button>
+  </div>
+</main>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script>
@@ -83,7 +188,7 @@
       { facingMode: "environment" },
       { fps: 10, qrbox: 250 },
       qrCodeSuccess
-    ).catch(err => alert("Ошибка камеры: " + err));
+    ).catch(err => alert("Eroare cameră: " + err));
   }
 
   function qrCodeSuccess(decodedText) {
@@ -99,7 +204,7 @@
     const qr = new Html5Qrcode("qr-scanner");
     qr.scanFile(file, true).then(decodedText => {
       document.getElementById("scannedResult").value = decodedText;
-    }).catch(() => alert("QR не найден в изображении"));
+    }).catch(() => alert("QR nu a fost găsit în imagine"));
   });
 
   function parseLinkData(link) {
@@ -121,7 +226,7 @@
     const count = parseInt(document.getElementById("linkCount").value);
 
     if (!link || !date || !startTime || !endTime || !count) {
-      alert("Заполни все поля!");
+      alert("Completează toate câmpurile!");
       return;
     }
 
@@ -132,11 +237,11 @@
     const now = new Date();
 
     if (end < start) {
-      alert("Время окончания не может быть раньше начала!");
+      alert("Ora de sfârșit nu poate fi înaintea celei de început!");
       return;
     }
     if (end > now) {
-      alert("Время не может быть из будущего!");
+      alert("Ora de sfârșit nu poate fi în viitor!");
       return;
     }
 
@@ -155,24 +260,17 @@
       const encodedDateTime = encodeURIComponent(`${dd}/${mm}/${yyyy}%20${hh}:${mi}`);
       const fullLink = `${base}?S=${data.S}&D=${encodedDateTime}&TI=${ti}&Q_Language=${data.lang}`;
 
-      linksHTML += `<div>
-        <a href="${fullLink}" target="_blank">${fullLink}</a><br>
-        <button class="copy-btn" onclick="copyLink('${fullLink}')">📋 Копировать</button>
-        <button class="open-btn" onclick="window.open('${fullLink}', '_blank')">🔓 Открыть</button>
+      linksHTML += `<div class="link-box">
+        <a href="${fullLink}" target="_blank">${fullLink}</a>
+        <button onclick="navigator.clipboard.writeText('${fullLink}'); alert('Copiat!')">📋 Copiază</button>
+        <button onclick="window.open('${fullLink}', '_blank')">🔓 Deschide</button>
       </div>`;
     }
 
     document.getElementById("links").innerHTML = linksHTML;
   }
 
-  function copyLink(text) {
-    navigator.clipboard.writeText(decodeURIComponent(text))
-      .then(() => alert("Скопировано!"))
-      .catch(() => alert("Не удалось скопировать"));
-  }
-
   setDefaultDateTime();
 </script>
-
 </body>
 </html>
